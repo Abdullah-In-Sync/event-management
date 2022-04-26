@@ -168,11 +168,20 @@
 
         <th>End Date</th>
       </tr>
-      <tbody v-for="event in events" :key="this.id">
+      <tbody v-for="event in events" :key="this.id" >
         <td>{{ event.name }}</td>
         <td>{{ event.eventName }}</td>
         <td>{{ dateConvert(event.startDate) }}</td>
         <td>{{ dateConvert(event.endDate) }}</td>
+      </tbody>
+      <h1 v-if="this.conflict.length">Conflicts</h1>
+      <button @click="remConflict" class="bg-blue-300 rounded px-3 my-5 mx-5">Remove Conflicts</button>
+      <button @click="remNewEvent" class="bg-blue-300 rounded px-3 my-5 mx-5">Remove New Event</button>
+      <tbody v-for="con in conflict" :key="this.id" >
+        <td :style="{color:this.bgColor}">{{ con.name }}</td>
+        <td>{{ con.eventName }}</td>
+        <td>{{ dateConvert(con.startDate) }}</td>
+        <td>{{ dateConvert(con.endDate) }}</td>
       </tbody>
     </table>
   </div>
@@ -200,6 +209,7 @@ export default {
       events: [],
       conflict: [],
       newElementIndex: null,
+      bgColor:"red"
     };
   },
   //   computed: {
@@ -221,7 +231,6 @@ export default {
         startDate: new Date(this.startDate),
         endDate: new Date(this.endDate),
       });
-   
 
       this.events.sort((a, b) => {
         return new Date(a.startDate) - new Date(b.startDate);
@@ -239,33 +248,61 @@ export default {
       console.log(this.newElementIndex);
 
       //upper conflict
-      if(this.newElementIndex>0){
-        for (let i = this.newElementIndex-1; i <= 0; i++) {
-          let startDateOfNewEvents = new Date(this.events[this.newElementIndex].startDate);
-          console.log("strtDatNw:",startDateOfNewEvents);
-          let endDateOfUpperEvents  = new Date(this.events[i].endDate);
-          console.log("endDtupr:",endDateOfUpperEvents);
-          if(endDateOfUpperEvents>startDateOfNewEvents){
-            this.conflict.push(this.events[i])
-            console.log("conflict:",this.events[i]);
-            console.log("conArr:",conflict);
+      if (this.newElementIndex > 0) {
+        for (let i = this.newElementIndex - 1; i >= 0; i--) {
+          let startDateOfNewEvents = new Date(
+            this.events[this.newElementIndex].startDate
+          );
+         
+
+          let endDateOfUpperEvents = new Date(this.events[i].endDate);
+          
+
+          if (endDateOfUpperEvents > startDateOfNewEvents) {
+            this.conflict.push(this.events[i]);
+            alert("Conflict Found")
+           
           }
-          
-          
         }
-
-
-
-
-
-
       }
-      
 
+      //lower conflict
+           
+      if ((this.newElementIndex + 1)<= this.events.length) {
+        for (let i = this.newElementIndex + 1; i < this.events.length; i++) {
+          let startDateOfNewEvents = new Date(
+            this.events[this.newElementIndex].endDate
+          );
+          
+
+          let endDateOfUpperEvents = new Date(this.events[i].startDate);
+          
+
+          if (endDateOfUpperEvents < startDateOfNewEvents) {
+            this.conflict.push(this.events[i]);
+             alert("Conflict Found")
+            
+           
+          }
+        }
+      }
+      console.log(this.conflict);
       this.q++;
     },
+
+remConflict(){
+this.events = this.events.filter( ( el ) => !this.conflict.includes( el ) );
+this.conflict=[]
+},
+remNewEvent(){
+this.events.splice(this.newElementIndex,1);
+console.log(this.events);
+this.conflict=[]
+},
+
     dateConvert(a) {
       return new Date(a).toLocaleString();
+      
     },
   },
 };
@@ -280,9 +317,10 @@ export default {
   color: #2c3e50;
   margin-top: 60px;
 }
-th {
+td,th {
   padding: 50px;
   margin: 10px;
-  border-right: 2px solid black;
+  border: 2px solid black;
 }
+
 </style>
